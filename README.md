@@ -25,7 +25,13 @@ javac -classpath `hadoop classpath` -d MissingPokerCards poker.java
 jar -cvf MissingPokerFinder.jar -C MissingPokerC
 ```
 
-* Run MissingPokerCards.jar file on Poker Input File.txt using the command:
+* Run MissingPokerFinder.jar file on Poker Input File.txt using the command:
 ```
 hadoop jar MissingPokerFinder.jar finalPoker.poker /MissingPokerCards_input.txt /output
+```
+
+
+* To copy jar file from ec2 to local: Note (Please change the pem file and Public IPv4 DNS as per yours)
+```
+scp -i ubuntu_aws_key.pem ubuntu@ec2-34-229-7-41.compute-1.amazonaws.com:/home/ubuntu/MissingPokerFinder.jar .
 ```
