@@ -8,11 +8,17 @@ This is an homework exercise of my Big Data course. In this MapReduce code to yo
 hadoop fs -put MissingPokerCards_input.txt /
 ```
 * Make the .jar file of MissingPokerCards.java
-...
+
+```
 mkdir ~/MissingPokerCards
+```
+```
 javac -classpath `hadoop classpath` -d MissingPokerCards poker.java
+```
+```
 jar -cvf MissingPokerFinder.jar -C MissingPokerC
-...
+```
+
 * Run MissingPokerCards.jar file on Poker Input File.txt using the command:
 ```
 hadoop jar MissingPokerFinder.jar finalPoker.poker /MissingPokerCards_input.txt /output
