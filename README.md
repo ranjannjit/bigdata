@@ -5,6 +5,12 @@ This is an homework exercise of my Big Data course. In this MapReduce code to yo
 # How to Run:
 * Copy Poker Input File.txt to HDFS using command:
 ```
+ hadoop fs -rm -r -f -skipTrash /MissingPokerCards_input.txt
+```
+```
+  hadoop fs -rm -r -f -skipTrash /output
+```
+```
 hadoop fs -put MissingPokerCards_input.txt /
 ```
 * Make the .jar file of MissingPokerCards.java
