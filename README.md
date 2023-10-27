@@ -22,7 +22,7 @@ mkdir ~/MissingPokerCards
 javac -classpath `hadoop classpath` -d MissingPokerCards poker.java
 ```
 ```
-jar -cvf MissingPokerFinder.jar -C MissingPokerC
+jar -cvf MissingPokerFinder.jar -C MissingPokerCards
 ```
 
 * Run MissingPokerFinder.jar file on Poker Input File.txt using the command:
