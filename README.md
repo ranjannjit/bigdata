@@ -44,7 +44,7 @@ vi /etc/hosts
 172.31.85.218 slave2
 172.31.89.84 slave3
 ```
-* To install Hadoop 2.6.5
+# To install Hadoop 2.6.5
 ```
 sudo apt-get update
 sudo apt-get install openjdk-8-jdk
@@ -196,4 +196,98 @@ bin/hdfs namenode -format
 sbin/start-dfs.sh
 sbin/start-yarn.sh
 jps
+```
+# Oozie Install
+
+* maven and other software installed 
+```
+sudo apt-get update
+sudo apt-get install maven
+sudo apt-get install unzip
+sudo apt-get install zip
+```
+* Download Oozie 4.1.0 from the Apache URL (http://archive.apache.org/dist/oozie/4.1.0/oozie-4.1.0.tar.gz) and save the tarball to any directory
+```
+wget http://archive.apache.org/dist/oozie/4.1.0/oozie-4.1.0.tar.gz
+tar -zvxf oozie-4.1.0.tar.gz
+```
+* Update the pom.xml to change the default hadoop version to 2.3.0. The reason we’re not changing it tohadoop version 2.6.0 here is because 2.3.0-oozie-4.1.0.jar is the latest available jar fi le. Luckily it works with higher versions in 2.x series
+```
+cd oozie-4.1.0
+vi pom.xml
+--Search for
+<hadoop.version>3.0.0-SNAPSHOT</hadoop.version>
+--Replace it with
+<hadoop.version>2.3.0</hadoop.version>
+```
+* Add below line under mirrors
+```
+sudo vi /etc/maven/settings.xml
+<mirror>
+    <id>central</id>
+    <url>https://repo.maven.apache.org/maven2</url>
+    <mirrorOf>central</mirrorOf>
+</mirror>
+```
+* Build Oozie executable
+```
+mvn clean package assembly:single -P hadoop-2 -DskipTests
+```
+* The executable will be generated in the target sub directory under distro dir.
+```
+cd distro/target/
+tar -zvxf oozie-4.1.0-distro.tar.gz
+sudo mv oozie-4.1.0 /usr/local/oozie-4.1.0
+```
+* Download ext-2.2.zip, this file is no longer available on the extjs.com ,that’s why downloading from cloudera archive https://archive.cloudera.com/gplextras/misc/ext-2.2.zip
+```
+cd /usr/local/oozie-4.1.0
+mkdir libext
+cd libext
+wget https://archive.cloudera.com/gplextras/misc/ext-2.2.zip
+```
+* Copy the hadoop lib files
+```
+cp -R  ~/oozie-4.1.0/hadooplibs/hadoop-2/target/hadooplibs/hadooplib-2.3.0.oozie-4.1.0/* /usr/local/oozie-4.1.0/libext/
+```
+* Edit core-site.xml under hadoop configuration directory to add some lines (substitute hduser with ubuntu or whichever user owns oozie. Replace, if required, hadoop with the group the user belongs to eg., ubuntu):
+```
+vi /home/ubuntu/hadoop-2.6.5/etc/hadoop/core-site.xml
+
+-- Add under <configuration>
+<property>
+	<name>hadoop.proxyuser.ubuntu.hosts</name>
+	<value>*</value>
+</property>
+<property>
+	<name>hadoop.proxyuser.ubuntu.groups</name>
+	<value>*</value>
+</property>
+
+```
+* Edit ~/.bashrc to add path to new oozie bin directory:
+```
+vi ~/.bashrc
+
+export OOZIE_VERSION=4.1.0
+export OOZIE_HOME=/usr/local/oozie-4.1.0
+export PATH=$PATH:$OOZIE_HOME/bin
+source ~/.bashrc
+```
+* Build the war file for oozie web console
+```
+cd /usr/local/oozie-4.1.0
+./bin/oozie-setup.sh prepare-war
+```
+* Setup metastore using Derby 
+```
+./bin/ooziedb.sh create -sqlfile oozie.sql -run
+```
+* To start Oozie, run the following command from the Oozie home directory:
+```
+bin/oozied.sh start
+
+--You have to replace with your Public DNS name
+http://ec2-54-196-228-248.compute-1.amazonaws.com:11000/oozie/
+
 ```
