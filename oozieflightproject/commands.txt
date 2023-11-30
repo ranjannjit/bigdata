@@ -44,6 +44,9 @@ e) Upload workflow.xml to HDFS
 
 f) Compile the java files and make a jar file and upload the jar file to HDFS
 
+Input files:
+https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HG7NV7#
+
 g)Initialize the database of oozie
 
 $ $OOZIE_HOME/bin/ooziedb.sh create -sqlfile oozie.sql -run
