@@ -1,0 +1,463 @@
+To execute oozie example mapreduce job:
+
+vi /usr/local/oozie-4.1.0/conf/oozie-site.xml
+ <property>
+        <name>oozie.service.HadoopAccessorService.hadoop.configurations</name>
+        <value>*=/home/ubuntu/hadoop-2.6.5/etc/hadoop/</value>
+        <description>
+            Comma separated AUTHORITY=HADOOP_CONF_DIR, where AUTHORITY is the HOST:PORT of
+            the Hadoop service (JobTracker, HDFS). The wildcard '*' configuration is
+            used when there is no exact match for an authority. The HADOOP_CONF_DIR contains
+            the relevant Hadoop *-site.xml files. If the path is relative is looked within
+            the Oozie configuration directory; though the path can be absolute (i.e. to point
+            to Hadoop client conf/ directories in the local filesystem.
+        </description>
+    </property>
+
+    <property>
+        <name>oozie.service.WorkflowAppService.system.libpath</name>
+        <value>hdfs://master:9000/user/ubuntu/share/lib</value>
+        <description>
+            System library path to use for workflow applications.
+            This path is added to workflow application if their job properties sets
+            the property 'oozie.use.system.libpath' to true.
+        </description>
+    </property>
+
+ubuntu@ip-172-31-23-116:~/hadoop-2.6.5/etc/hadoop$ mv mapred-site.xml.template mapred-site.xml
+
+ubuntu@ip-172-31-23-116:~/hadoop-2.6.5/etc/hadoop$ vi mapred-site.xml
+
+<configuration>
+	<property>
+		<name>mapreduce.jobtracker.address</name>
+		<value>master:8021</value>
+	</property>
+	
+	<property>
+		<name>mapreduce.jobtracker.http.address</name>
+		<value>master:8081</value>
+	</property>
+	
+	<property>
+		<name>mapreduce.tasktracker.report.address</name>
+		<value>master:0</value>
+	</property>
+	
+	<property>
+		<name>mapreduce.tasktracker.http.address</name>
+		<value>master:50060</value>
+	</property>
+	
+	<property>
+		<name>mapreduce.job.queuename</name>
+		<value>default</value>
+	</property>
+	
+	<property>
+		<name> mapreduce.framework.name</name>
+		<value>yarn</value>
+	</property>
+	
+	<property> 
+		<name>mapreduce.jobhistory.address</name>
+		<value>master:10020</value> 
+	</property>
+	
+	<property> 
+		<name>mapreduce.jobhistory.webapp.address</name>
+		<value>master:19888</value> 
+	</property>
+</configuration>
+
+
+Yarn.site.xml
+
+<!-- Site specific YARN configuration properties -->
+         <property>
+                <name>yarn.nodemanager.aux-services</name>
+                <value>mapreduce_shuffle</value>
+        </property>
+        <property>
+                <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+                <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.hostname</name>
+                <value>master</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.address</name>
+                <value>master:8032</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.sheduler.address</name>
+                <value>master:8030</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.resource-tracker.address</name>
+                <value>master:8035</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.admin.address</name>
+                <value>master:8033</value>
+        </property>
+        <property>
+                <name>yarn.resourcemanager.webapp.address</name>
+                <value>master:8088</value>
+        </property>
+</configuration>
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$ cp /home/ubuntu/hadoop-2.6.5/etc/hadoop/core-site.xml /usr/local/oozie-4.1.0/conf/
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$ cp /home/ubuntu/hadoop-2.6.5/etc/hadoop/hdfs-site.xml /usr/local/oozie-4.1.0/conf/
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$ cp /home/ubuntu/hadoop-2.6.5/etc/hadoop/yarn-site.xml /usr/local/oozie-4.1.0/conf/
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$
+
+
+
+To start hadoop : start hdfs deamon, yarn deamon and history server.
+ubuntu@ip-172-31-23-116:~/hadoop-2.6.5$sbin/start-dfs.sh
+ubuntu@ip-172-31-23-116:~/hadoop-2.6.5$sbin/start-yarn.sh
+
+HADOOP HISTORY SERVER
+The Oozie server needs to talk to Hadoop History server, to know the previous state of the Jobs, 
+so we need to keep history server started while running Oozie. This error occurs when you try to run a workflow.
+
+
+ubuntu@ip-172-31-23-116:~/hadoop-2.6.5$sbin/mr-jobhistory-daemon.sh start historyserver
+
+
+
+
+
+Check if home dir created -if returning no folder 
+ubuntu@ip-172-31-23-116:~$ hadoop fs -ls hdfs://master:9000/
+Use below commad to create home directory
+ubuntu@ip-172-31-23-116:~$ hadoop fs -mkdir hdfs://master:9000/user/
+ubuntu@ip-172-31-23-116:~$ hadoop fs -mkdir hdfs://master:9000/user/ubuntu
+
+
+To create the share lib
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ ls -lrt
+total 129808
+-rw-r--r-- 1 ubuntu ubuntu    83478 Dec  5  2014 release-log.txt
+-rwxrwxr-x 1 ubuntu ubuntu  5836727 Nov  1 04:39 oozie-client-4.1.0.tar.gz
+-rwxrwxr-x 1 ubuntu ubuntu  2605045 Nov  1 04:41 docs.zip
+-rwxrwxr-x 1 ubuntu ubuntu 27481855 Nov  1 04:41 oozie.war
+-rwxrwxr-x 1 ubuntu ubuntu    31676 Nov  1 04:42 oozie-examples.tar.gz
+-r--r--r-- 1 ubuntu ubuntu 96830985 Nov  1 04:42 oozie-sharelib-4.1.0.tar.gz
+drwxrwxr-x 9 ubuntu ubuntu     4096 Nov  1 04:42 oozie-server
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 lib
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 bin
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 libtools
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 oozie-core
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:50 libext
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:56 data
+-rw-rw-r-- 1 ubuntu ubuntu     7576 Nov  1 04:57 oozie.sql
+drwxr-xr-x 4 ubuntu ubuntu     4096 Nov 22 05:14 conf
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov 22 05:19 logs
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$tar xvf oozie-sharelib-4.1.0.tar.gz
+
+
+You can see share folder
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ ls -lrt
+total 129812
+-rw-r--r-- 1 ubuntu ubuntu    83478 Dec  5  2014 release-log.txt
+-rwxrwxr-x 1 ubuntu ubuntu  5836727 Nov  1 04:39 oozie-client-4.1.0.tar.gz
+-rwxrwxr-x 1 ubuntu ubuntu  2605045 Nov  1 04:41 docs.zip
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:41 share
+-rwxrwxr-x 1 ubuntu ubuntu 27481855 Nov  1 04:41 oozie.war
+-rwxrwxr-x 1 ubuntu ubuntu    31676 Nov  1 04:42 oozie-examples.tar.gz
+-r--r--r-- 1 ubuntu ubuntu 96830985 Nov  1 04:42 oozie-sharelib-4.1.0.tar.gz
+drwxrwxr-x 9 ubuntu ubuntu     4096 Nov  1 04:42 oozie-server
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 lib
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 bin
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 libtools
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 oozie-core
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:50 libext
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:56 data
+-rw-rw-r-- 1 ubuntu ubuntu     7576 Nov  1 04:57 oozie.sql
+drwxr-xr-x 4 ubuntu ubuntu     4096 Nov 22 05:14 conf
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov 22 05:19 logs
+
+
+
+
+ubuntu@ip-172-31-16-7:/usr/local/oozie-4.1.0$ hadoop fs -put share /user/ubuntu/
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ hadoop fs -ls /user/ubuntu/
+Found 1 items
+drwxr-xr-x   - ubuntu supergroup          0 2023-11-22 05:37 /user/ubuntu/share
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$ cd /usr/local/oozie-4.1.0/conf
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/conf$ vi /usr/local/oozie-4.1.0/conf/oozie-env.sh
+# Set Java home and hadoop prefix  
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export OOZIE_PREFIX=/usr/local/oozie-4.1.0
+ 
+# Set hadoop configuration path  
+export OOZIE_CONF_DIR=/usr/local/oozie-4.1.0/conf/
+export OOZIE_HOME=/usr/local/oozie-4.1.0
+ 
+# add hadoop package 
+for file in $OOZIE_HOME/libext/*.jar
+do
+    export CLASSPATH=$CLASSPATH:$file
+done
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozied.sh start
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie admin -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -status
+System mode: NORMAL
+
+
+Set time zone to be UTC
+
+set  global  time_zone="UTC";
+
+
+
+ 
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie admin -shareliblist -oozie http://ec2-3-93-68-161.compute-1.amazonaws.com:11000/oozie
+[Available ShareLib]
+hive
+distcp
+mapreduce-streaming
+oozie
+hcatalog
+sqoop
+pig
+
+
+
+Run an Example
+We are going to run the example provided by oozie. Firstly extract example in oozie directory:
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ ls -lrt
+total 129812
+-rw-r--r-- 1 ubuntu ubuntu    83478 Dec  5  2014 release-log.txt
+-rwxrwxr-x 1 ubuntu ubuntu  5836727 Nov  1 04:39 oozie-client-4.1.0.tar.gz
+-rwxrwxr-x 1 ubuntu ubuntu  2605045 Nov  1 04:41 docs.zip
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:41 share
+-rwxrwxr-x 1 ubuntu ubuntu 27481855 Nov  1 04:41 oozie.war
+-rwxrwxr-x 1 ubuntu ubuntu    31676 Nov  1 04:42 oozie-examples.tar.gz
+-r--r--r-- 1 ubuntu ubuntu 96830985 Nov  1 04:42 oozie-sharelib-4.1.0.tar.gz
+drwxrwxr-x 9 ubuntu ubuntu     4096 Nov  1 04:42 oozie-server
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 lib
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 bin
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 libtools
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 oozie-core
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:50 libext
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:56 data
+-rw-rw-r-- 1 ubuntu ubuntu     7576 Nov  1 04:57 oozie.sql
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov 22 06:00 logs
+drwxr-xr-x 4 ubuntu ubuntu     4096 Nov 22 06:05 conf
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ tar -xzvf oozie-examples.tar.gz
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ ls -lrt
+total 129816
+-rw-r--r-- 1 ubuntu ubuntu    83478 Dec  5  2014 release-log.txt
+-rwxrwxr-x 1 ubuntu ubuntu  5836727 Nov  1 04:39 oozie-client-4.1.0.tar.gz
+-rwxrwxr-x 1 ubuntu ubuntu  2605045 Nov  1 04:41 docs.zip
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:41 share
+-rwxrwxr-x 1 ubuntu ubuntu 27481855 Nov  1 04:41 oozie.war
+-rwxrwxr-x 1 ubuntu ubuntu    31676 Nov  1 04:42 oozie-examples.tar.gz
+-r--r--r-- 1 ubuntu ubuntu 96830985 Nov  1 04:42 oozie-sharelib-4.1.0.tar.gz
+drwxrwxr-x 9 ubuntu ubuntu     4096 Nov  1 04:42 oozie-server
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 lib
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 bin
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 libtools
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:44 oozie-core
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov  1 04:50 libext
+drwxrwxr-x 3 ubuntu ubuntu     4096 Nov  1 04:56 data
+-rw-rw-r-- 1 ubuntu ubuntu     7576 Nov  1 04:57 oozie.sql
+drwxrwxr-x 2 ubuntu ubuntu     4096 Nov 22 06:00 logs
+drwxr-xr-x 4 ubuntu ubuntu     4096 Nov 22 06:05 conf
+drwxrwxr-x 5 ubuntu ubuntu     4096 Nov 22 06:19 examples
+
+
+
+configure the job.properties file in examples/apps/map-reduce:
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ cd examples/apps/map-reduce
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/examples/apps/map-reduce$ ls -lrt
+total 12
+-rw-r--r-- 1 ubuntu ubuntu 2559 Dec  5  2014 workflow.xml
+-rw-r--r-- 1 ubuntu ubuntu  999 Dec  5  2014 job.properties
+drwxrwxr-x 2 ubuntu ubuntu 4096 Nov 22 06:19 lib
+
+#You have to change the configuration of nameNode and jobTracker. nameNode value is configured in Hadoop core-site.xml, 
+          and jobTracker value is configured in Hadoop yarn-site.xml under the property yarn.resourcemanager.address.
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/examples/apps/map-reduce$ vi job.properties
+
+
+
+nameNode=hdfs://master:9000
+jobTracker=master:8032
+queueName=default
+examplesRoot=examples
+
+oozie.wf.application.path=${nameNode}/user/${user.name}/${examplesRoot}/apps/map-reduce
+outputDir=map-reduce
+
+
+
+
+
+
+
+Then using the following command to upload this code to HDFS:
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0/examples/apps/map-reduce$ cd ../../..
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$hadoop fs -put examples /user/ubuntu/
+
+
+then, you can use the following command to execute this oozie job:
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie job -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -config examples/apps/map-reduce/job.properties -run
+job: 0000000-231122065144036-oozie-ubun-W
+
+Error: E0501 : E0501: Could not perform authorization operation, Call From ip-172-31-23-116/172.31.23.116 to master:9000 failed on connection exception: java.net.ConnectException: Connection refused
+
+
+nameNode=hdfs://sandbox.hortonworks.com:8020
+jobTracker=sandbox.hortonworks.com:8032
+
+queueName=default
+examplesRoot=examples
+
+oozie.wf.application.path=${nameNode}/user/${user.name}/${examplesRoot}/apps/map-reduce
+outputDir=map-reduce
+
+
+
+After submitting job, oozie will give you a job ID. You can use this Job ID to track your oozie job execution:
+
+bin/oozie job -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -info 0000000-231125011128711-oozie-ubun-W -verbose
+
+
+After you see SUCCESS, you can print out the execution result using following command:
+
+hdfs dfs -cat /user/ubuntu/examples/output-data/map-reduce/part-00000
+
+
+
+Submit a Oozie Workflow
+1
+2
+From Hadoop Directory: bin/hdfs dfs -put path-to-oozie-directory/examples examples 
+From Oozie Directory: bin/oozie job -oozie http://localhost:11000/oozie/ -config examples/apps/map-reduce/job.properties  -run
+
+JA017: Unknown hadoop job [job_local1565309116_0001] associated with action [0000000-231122065144036-oozie-ubun-W@mr-node].
+0000000-231122065144036-oozie-ubun-W@mr-node    http://localhost:8080/  JA017   
+JA017: Unknown hadoop job [job_local1565309116_0001] associated with action [0000000-231122065144036-oozie-ubun-W@mr-node].  
+Failing this action!   job_local1565309116_0001        FAILED  mr-node 0       master:8032     map-reduce      2023-11-22 07:00:02 GMT FAILED      -
+
+
+Here are a few things you can check and troubleshoot:
+
+Check if the Job Succeeded in Hadoop:
+
+Go to your Hadoop ResourceManager UI or use Hadoop CLI commands to check if the job with ID job_local1565309116_0001 completed successfully or if there were any issues during its execution.
+Check Oozie Logs:
+
+Review the Oozie logs for more detailed information. Oozie logs are usually located in the Oozie server's logs directory. Look for any additional error messages or stack traces that might provide more insight into the problem.
+Verify Configuration:
+
+Ensure that your Oozie workflow XML file is correctly configured. Check the <job-tracker> and <name-node> properties to make sure they are pointing to the correct Hadoop job tracker and HDFS name node, respectively.
+Check Hadoop Job ID:
+
+Confirm that the Hadoop job ID specified in the Oozie workflow (job_local1565309116_0001 in this case) corresponds to a valid and completed Hadoop job.
+Check Hadoop Version Compatibility:
+
+Make sure that the version of Hadoop used by Oozie is compatible. Sometimes issues arise when using versions that are not fully supported or tested together.
+Investigate ResourceManager URL:
+
+The ResourceManager URL (master:8032 in this case) should be accessible. Ensure that the ResourceManager is running and can be reached from the machine where Oozie is running.
+Permissions:
+
+Check if the user running Oozie has the necessary permissions to submit and monitor MapReduce jobs.
+Check MapReduce Configuration:
+
+Verify the MapReduce job configuration. Check for any specific settings or dependencies required by your MapReduce job that might not be correctly configured in the Oozie workflow.
+By systematically going through these steps, you should be able to identify the root cause of the issue. If the problem persists, providing more details about your Oozie workflow XML and any additional error messages in the logs would be helpful for further assistance.
+
+
+
+RM
+
+http://ec2-54-227-90-110.compute-1.amazonaws.com:8088
+Haddop:
+http://ec2-54-227-90-110.compute-1.amazonaws.com:50070
+
+
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie job -oozie http://ec2-3-85-120-244.compute-1.amazonaws.com:11000/oozie -config $OOZIE_HOME/examples/apps/map-reduce/job.properties -run
+job: 0000002-231122065144036-oozie-ubun-W
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie job -oozie http://ec2-3-85-120-244.compute-1.amazonaws.com:11000/oozie -info 0000001-231202063418169-oozie-ubun-W -verbose
+Job ID : 0000002-231122065144036-oozie-ubun-W
+------------------------------------------------------------------------------------------------------------------------------------
+Workflow Name : map-reduce-wf
+App Path      : hdfs://master:9000/user/ubuntu/examples/apps/map-reduce/workflow.xml
+Status        : FAILED
+Run           : 0
+User          : ubuntu
+Group         : -
+Created       : 2023-11-22 07:49:31 GMT
+Started       : 2023-11-22 07:49:31 GMT
+Last Modified : 2023-11-22 07:49:32 GMT
+Ended         : 2023-11-22 07:49:32 GMT
+CoordAction ID: -
+
+Actions
+------------------------------------------------------------------------------------------------------------------------------------
+ID      Console URL     Error Code      Error Message   External ID     External Status Name    Retries Tracker URI     Type    Started Status  Ended
+------------------------------------------------------------------------------------------------------------------------------------
+0000002-231122065144036-oozie-ubun-W@:start:    -       -       -       -       OK      :start: 0       -       :START: 2023-11-22 07:49:31 GMT OK      2023-11-22 07:49:31 GMT
+------------------------------------------------------------------------------------------------------------------------------------
+0000002-231122065144036-oozie-ubun-W@mr-node    http://localhost:8080/  JA017   JA017: Unknown hadoop job [job_local71506758_0003] associated with action [0000002-231122065144036-oozie-ubun-W@mr-node].  Failing this action!     job_local71506758_0003  FAILED  mr-node 0       master:8032     map-reduce      2023-11-22 07:49:31 GMT FAILED  -   ------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+To Run example jobs:
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie admin -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -status
+System mode: NORMAL
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie job -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -config examples/apps/map-reduce/job.properties -run
+job: 0000000-231125011128711-oozie-ubun-W
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$ bin/oozie job -oozie http://ec2-34-228-54-116.compute-1.amazonaws.com:11000/oozie -info 0000000-231125011128711-oozie-ubun-W -verbose
+Job ID : 0000000-231125011128711-oozie-ubun-W
+------------------------------------------------------------------------------------------------------------------------------------
+Workflow Name : map-reduce-wf
+App Path      : hdfs://ip-172-31-23-116.ec2.internal:9000/user/ubuntu/examples/apps/map-reduce/workflow.xml
+Status        : SUCCEEDED
+Run           : 0
+User          : ubuntu
+Group         : -
+Created       : 2023-11-25 01:16:48 GMT
+Started       : 2023-11-25 01:16:48 GMT
+Last Modified : 2023-11-25 01:17:32 GMT
+Ended         : 2023-11-25 01:17:32 GMT
+CoordAction ID: -
+
+Actions
+------------------------------------------------------------------------------------------------------------------------------------
+ID      Console URL     Error Code      Error Message   External ID     External Status Name    Retries Tracker URI     Type    Started Status    Ended
+------------------------------------------------------------------------------------------------------------------------------------
+0000000-231125011128711-oozie-ubun-W@:start:    -       -       -       -       OK      :start: 0       -       :START: 2023-11-25 01:16:49 GMT   OK      2023-11-25 01:16:49 GMT
+------------------------------------------------------------------------------------------------------------------------------------
+0000000-231125011128711-oozie-ubun-W@mr-node    http://master:8088/proxy/application_1700874511692_0001/        -       -       job_1700874511692_0001    SUCCEEDED       mr-node 0       ip-172-31-23-116.ec2.internal:8032      map-reduce      2023-11-25 01:16:49 GMT OK      2023-11-25 01:17:32 GMT
+------------------------------------------------------------------------------------------------------------------------------------
+0000000-231125011128711-oozie-ubun-W@end        -       -       -       -       OK      end     0       -       :END:   2023-11-25 01:17:32 GMT   OK      2023-11-25 01:17:32 GMT
+------------------------------------------------------------------------------------------------------------------------------------
+
+ubuntu@ip-172-31-23-116:/usr/local/oozie-4.1.0$
