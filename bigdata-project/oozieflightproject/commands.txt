@@ -1,63 +1,547 @@
-A) Passphrase-less SSH
+Step 1:
+Open cygwin if running on window.
 
-B) Hadoop Configurations common on all nodes
+Step 2:
+Check the current path where project zip file palced.
+ranja@Ranjan ~
+$ pwd
+/home/ranja
 
-C) NameNode Specific Configurations
-
-D) Datanode Specific Configurations
-
-E) Start Hadoop Cluster
-
-   hdfs namenode -format
-   $HADOOP_HOME/sbin/start-dfs.sh
-   $HADOOP_HOME/sbin/start-yarn.sh
-   $HADOOP_HOME/sbin/mr-jobhistory-daemon.sh start historyserver
-
-
-F) Oozie Installation/Build
-
-G) Commands 
-
-a) Upload all the files into hadoop directory /usr/local/hadoop
-
-mkdir input
-
-b) Upload the entire data set to the input directory /usr/local/hadoop/input
-
-$ hdfs namenode -format
-$ sbin/start-all.sh
-$ sbin/mr-jobhistory-daemon.sh start historyserver
-
-c) Upload input file to HDFS
-
-$ hdfs dfs -mkdir -p input
-$ hdfs dfs -put input/* input
-
-d) Upload oozie's share file to HDFS
-
-$ cd $OOZIE_HOME
-$ sudo tar xvf oozie-sharelib-4.3.0.tar.gz 
-$ cd $HADOOP_HOME
-$ hdfs dfs -put $OOZIE_HOME/share share
-
-e) Upload workflow.xml to HDFS
-
-f) Compile the java files and make a jar file and upload the jar file to HDFS
-
-Input files:
-https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/HG7NV7#
-
-g)Initialize the database of oozie
-
-$ $OOZIE_HOME/bin/ooziedb.sh create -sqlfile oozie.sql -run
-$ $OOZIE_HOME/bin/oozied.sh start
-
-h) Run the program
-
-$ oozie job -oozie http://localhost:11000/oozie -config job.properties -run
-
-$ hdfs dfs -get project_temp/output output
-
-i) Get the Result from HDFS
+Step 3:
+Place the zip file bigdata-project.zip under /home/ranja and 1987.csv
+ranja@Ranjan ~
+$ scp -i aws_project_key.pem bigdata-project.zip ubuntu@ec2-3-90-203-152.compute-1.amazonaws.com:/home/ubuntu/.
 
 
+
+Step 4:
+connect to aws instance
+ssh -i aws_project_key.pem ubuntu@ec2-3-90-203-152.compute-1.amazonaws.com
+
+Step 5:
+Start the hadoop:
+
+ubuntu@ip-172-31-23-116:~$ start-dfs.sh
+ubuntu@ip-172-31-23-116:~$ start-yarn.sh
+ubuntu@ip-172-31-23-116:~$ mr-jobhistory-daemon.sh start historyserver
+
+Check the 
+ubuntu@ip-172-31-23-116:~$ jps
+3250 SecondaryNameNode
+3380 ResourceManager
+1782 Bootstrap
+3654 JobHistoryServer
+3718 Jps
+3023 NameNode
+ubuntu@ip-172-31-23-116:~$
+
+Step 6:
+Check the file 
+ubuntu@ip-172-31-23-116:~$ ls -lrt /home/ubuntu
+total 196796
+-rw-rw-r--  1 ubuntu ubuntu   1822296 Dec  5  2014 oozie-4.1.0.tar.gz
+-rw-rw-r--  1 ubuntu ubuntu 199635269 Oct 11  2016 hadoop-2.6.5.tar.gz
+drwxrwxr-x 12 ubuntu ubuntu      4096 Nov  1 04:13 hadoop-2.6.5
+drwxr-xr-x 21 ubuntu ubuntu      4096 Nov 14 00:42 oozie-4.1.0
+-rw-rw-r--  1 ubuntu ubuntu     47785 Dec  1 14:20 bigdata-project.zip
+ubuntu@ip-172-31-23-116:~$
+
+Step 7:
+Unzip the file, if unzip is not installed run this command to install -> sudo apt-get install unzip
+ubuntu@ip-172-31-23-116:~$ unzip bigdata-project.zip
+Archive:  bigdata-project.zip
+444e4a3f7ef8fd00497c8643fb9da695d1f2f8a3
+   creating: bigdata-project/
+  inflating: bigdata-project/README.md
+   creating: bigdata-project/oozieflightproject/
+  inflating: bigdata-project/oozieflightproject/commands.txt
+   creating: bigdata-project/oozieflightproject/lib/
+  inflating: bigdata-project/oozieflightproject/lib/job.properties
+  inflating: bigdata-project/oozieflightproject/lib/project_temp.jar
+  inflating: bigdata-project/oozieflightproject/lib/workflow.xml
+  inflating: bigdata-project/oozieflightproject/oozie_workflow.drawio
+  inflating: bigdata-project/oozieflightproject/oozie_workflow.png
+  inflating: bigdata-project/oozieflightproject/output.txt
+   creating: bigdata-project/oozieflightproject/src/
+  inflating: bigdata-project/oozieflightproject/src/FlightCancellation.java
+  inflating: bigdata-project/oozieflightproject/src/FlightDelay.java
+  inflating: bigdata-project/oozieflightproject/src/FlightTaxiTime.java
+
+Step 8:
+Check the unzip file:
+ubuntu@ip-172-31-23-116:~$ ls -lrt
+total 196800
+-rw-rw-r--  1 ubuntu ubuntu   1822296 Dec  5  2014 oozie-4.1.0.tar.gz
+-rw-rw-r--  1 ubuntu ubuntu 199635269 Oct 11  2016 hadoop-2.6.5.tar.gz
+drwxrwxr-x 12 ubuntu ubuntu      4096 Nov  1 04:13 hadoop-2.6.5
+drwxr-xr-x 21 ubuntu ubuntu      4096 Nov 14 00:42 oozie-4.1.0
+drwxrwxr-x  3 ubuntu ubuntu      4096 Nov 30 06:16 bigdata-project
+-rw-rw-r--  1 ubuntu ubuntu     47785 Dec  1 14:20 bigdata-project.zip
+
+Step 9:
+Go to path and view all *java files on /home/ubuntu/bigdata-project/oozieflightproject/src
+
+ubuntu@ip-172-31-23-116:~$ cd bigdata-project
+ubuntu@ip-172-31-23-116:~/bigdata-project$ ls -lrt
+total 12
+drwxrwxr-x 4 ubuntu ubuntu 4096 Nov 30 06:16 oozieflightproject
+-rw-rw-r-- 1 ubuntu ubuntu 7921 Nov 30 06:16 README.md
+ubuntu@ip-172-31-23-116:~/bigdata-project$ cd oozieflightproject
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject$ ls -lrt
+total 52
+drwxrwxr-x 2 ubuntu ubuntu  4096 Nov 30 06:16 src
+-rw-rw-r-- 1 ubuntu ubuntu  8541 Nov 30 06:16 output.txt
+-rw-rw-r-- 1 ubuntu ubuntu 22369 Nov 30 06:16 oozie_workflow.png
+-rw-rw-r-- 1 ubuntu ubuntu  1778 Nov 30 06:16 oozie_workflow.drawio
+drwxrwxr-x 2 ubuntu ubuntu  4096 Nov 30 06:16 lib
+-rw-rw-r-- 1 ubuntu ubuntu  1379 Nov 30 06:16 commands.txt
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject$ cd src
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ ls -lrt
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ pwd
+ubuntu@ip-172-31-23-116:~$ cd ~/bigdata-project/oozieflightproject/src
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ ls -lrt
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+
+Step 10:
+Create the classes for all java files one by one, started with FlightTaxiTime after creating a directory "FlightTaxiTime" under src
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ mkdir FlightTaxiTime
+
+#Run command javac to create the class 
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ javac -classpath `hadoop classpath` -d FlightTaxiTime FlightTaxiTime.java
+
+Note: FlightTaxiTime.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+# Go to FlightTaxiTime folder to Check the class.
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ cd FlightTaxiTime/
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightTaxiTime$ ls -lrt
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1917 Dec  1 18:12  FlightTaxiTimeMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu  552 Dec  1 18:12 'FlightTaxiTimeReducer$customTaxiTime.class'
+-rw-rw-r-- 1 ubuntu ubuntu 1116 Dec  1 18:12 'FlightTaxiTimeReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu 3203 Dec  1 18:12  FlightTaxiTimeReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1483 Dec  1 18:12  FlightTaxiTime.class
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightTaxiTime$
+
+Step 11:
+#Create jar file for FlightTaxiTime after going back to src folder
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightTaxiTime$ cd ..
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ jar cvf FlightTaxiTime.jar -C FlightTaxiTime/ .
+added manifest
+adding: FlightTaxiTime.class(in = 1483) (out= 793)(deflated 46%)
+adding: FlightTaxiTimeReducer.class(in = 3203) (out= 1332)(deflated 58%)
+adding: FlightTaxiTimeReducer$customTaxiTime.class(in = 552) (out= 339)(deflated 38%)
+adding: FlightTaxiTimeMapper.class(in = 1917) (out= 851)(deflated 55%)
+adding: FlightTaxiTimeReducer$1.class(in = 1116) (out= 542)(deflated 51%)
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ ls -lrt
+total 32
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:12 FlightTaxiTime
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 18:27 FlightTaxiTime.jar
+
+
+Step 12 : Repeat the step 10 and 11 for remaining two Java files -> here doing for "FlightDelay"
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ mkdir FlightDelay
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ javac -classpath `hadoop classpath` -d FlightDelay FlightDelay.java
+
+Note: FlightDelay.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ cd FlightDelay
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightDelay$ ls -lrt
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1799 Dec  1 18:32  FlightDelayMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu  574 Dec  1 18:32 'FlightDelayReducer$customDelay.class'
+-rw-rw-r-- 1 ubuntu ubuntu 1069 Dec  1 18:32 'FlightDelayReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu 2999 Dec  1 18:32  FlightDelayReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1471 Dec  1 18:32  FlightDelay.class
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightDelay$
+
+Step 13: 
+#Create jar file for FlightDelay after going back to src folder
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightDelay$ cd ..
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ jar cvf FlightDelay.jar -C FlightDelay/ .
+added manifest
+adding: FlightDelayReducer$customDelay.class(in = 574) (out= 357)(deflated 37%)
+adding: FlightDelayReducer$1.class(in = 1069) (out= 534)(deflated 50%)
+adding: FlightDelayReducer.class(in = 2999) (out= 1243)(deflated 58%)
+adding: FlightDelayMapper.class(in = 1799) (out= 777)(deflated 56%)
+adding: FlightDelay.class(in = 1471) (out= 789)(deflated 46%)
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ ls -lrt
+total 56
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:12 FlightTaxiTime
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 18:27 FlightTaxiTime.jar
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:32 FlightDelay
+-rw-rw-r-- 1 ubuntu ubuntu 4748 Dec  1 18:35 FlightDelay.jar
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+
+
+Step 14 : Repeat the step 10 and 11 for remaining two Java files -> here doing for "FlightCancellation"
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ mkdir FlightCancellation
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ javac -classpath `hadoop classpath` -d FlightCancellation FlightCancellation.java
+Note: FlightCancellation.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ cd FlightCancellation/
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightCancellation$ ls -lrt
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1791 Dec  1 18:52  FlightCancellationMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu 1141 Dec  1 18:52 'FlightCancellationReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu  623 Dec  1 18:52 'FlightCancellationReducer$customCancel.class'
+-rw-rw-r-- 1 ubuntu ubuntu 3564 Dec  1 18:52  FlightCancellationReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1496 Dec  1 18:52  FlightCancellation.class
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightCancellation$
+
+
+Step 15: 
+#Create jar file for FlightCancellation after going back to src folder
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src/FlightDelay$ cd ..
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ jar cvf FlightCancellation.jar -C FlightCancellation/ .
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ jar cvf FlightCancellation.jar -C FlightCancellation/ .
+added manifest
+adding: FlightCancellation.class(in = 1496) (out= 790)(deflated 47%)
+adding: FlightCancellationReducer$customCancel.class(in = 623) (out= 372)(deflated 40%)
+adding: FlightCancellationReducer$1.class(in = 1141) (out= 538)(deflated 52%)
+adding: FlightCancellationMapper.class(in = 1791) (out= 764)(deflated 57%)
+adding: FlightCancellationReducer.class(in = 3564) (out= 1515)(deflated 57%)
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ ls -lrt
+total 56
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:12 FlightTaxiTime
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 18:27 FlightTaxiTime.jar
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:32 FlightDelay
+-rw-rw-r-- 1 ubuntu ubuntu 4748 Dec  1 18:35 FlightDelay.jar
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:52 FlightCancellation
+-rw-rw-r-- 1 ubuntu ubuntu 5099 Dec  1 18:54 FlightCancellation.jar
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+
+
+Step 16:
+Create input-data folder and place all the files
+ 
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject$ mkdir input-data
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject$ ls -lrt
+total 56
+-rw-rw-r-- 1 ubuntu ubuntu  8541 Nov 30 06:16 output.txt
+-rw-rw-r-- 1 ubuntu ubuntu 22369 Nov 30 06:16 oozie_workflow.png
+-rw-rw-r-- 1 ubuntu ubuntu  1778 Nov 30 06:16 oozie_workflow.drawio
+drwxrwxr-x 2 ubuntu ubuntu  4096 Nov 30 06:16 lib
+-rw-rw-r-- 1 ubuntu ubuntu  1379 Nov 30 06:16 commands.txt
+drwxrwxr-x 5 ubuntu ubuntu  4096 Dec  1 18:54 src
+drwxrwxr-x 2 ubuntu ubuntu  4096 Dec  1 18:57 input-data
+
+
+Step 17:
+
+Upload the input data from local window to aws 
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/input-data$ exit
+logout
+Connection to ec2-18-215-164-251.compute-1.amazonaws.com closed.
+
+ranja@Ranjan ~
+$ scp -i aws_project_key.pem 1987.csv ubuntu@ec2-18-215-164-251.compute-1.amazonaws.com:~/bigdata-project/oozieflightproject/input-data/.
+1987.csv                                                                                                                                  100%  121MB   4.2MB/s   00:28
+
+step 18:
+Then connect to aws: check jps and cd to input-data after that check file.
+ ranja@Ranjan ~
+$ ssh -i aws_project_key.pem ubuntu@ec2-18-215-164-251.compute-1.amazonaws.com
+ubuntu@ip-172-31-23-116:~$ jps
+1640 JobHistoryServer
+1369 ResourceManager
+2825 Jps
+1020 NameNode
+1246 SecondaryNameNode
+ubuntu@ip-172-31-23-116:~$ cd bigdata-project/oozieflightproject/input-data
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/input-data$
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/input-data$ head 1987.csv
+Year,Month,DayofMonth,DayOfWeek,DepTime,CRSDepTime,ArrTime,CRSArrTime,UniqueCarrier,FlightNum,TailNum,ActualElapsedTime,CRSElapsedTime,AirTime,ArrDelay,DepDelay,Origin,Dest,Distance,TaxiIn,TaxiOut,Cancelled,CancellationCode,Diverted,CarrierDelay,WeatherDelay,NASDelay,SecurityDelay,LateAircraftDelay
+1987,10,14,3,741,730,912,849,PS,1451,NA,91,79,NA,23,11,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,15,4,729,730,903,849,PS,1451,NA,94,79,NA,14,-1,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,17,6,741,730,918,849,PS,1451,NA,97,79,NA,29,11,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,18,7,729,730,847,849,PS,1451,NA,78,79,NA,-2,-1,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,19,1,749,730,922,849,PS,1451,NA,93,79,NA,33,19,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,21,3,728,730,848,849,PS,1451,NA,80,79,NA,-1,-2,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,22,4,728,730,852,849,PS,1451,NA,84,79,NA,3,-2,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,23,5,731,730,902,849,PS,1451,NA,91,79,NA,13,1,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+1987,10,24,6,744,730,908,849,PS,1451,NA,84,79,NA,19,14,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/input-data$
+
+
+step 19:
+Put folder to hadoop 
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/input-data$ cd
+ubuntu@ip-172-31-23-116:~$ ls -lrt
+total 196800
+-rw-rw-r--  1 ubuntu ubuntu   1822296 Dec  5  2014 oozie-4.1.0.tar.gz
+-rw-rw-r--  1 ubuntu ubuntu 199635269 Oct 11  2016 hadoop-2.6.5.tar.gz
+drwxrwxr-x 12 ubuntu ubuntu      4096 Nov  1 04:13 hadoop-2.6.5
+drwxr-xr-x 21 ubuntu ubuntu      4096 Nov 14 00:42 oozie-4.1.0
+drwxrwxr-x  3 ubuntu ubuntu      4096 Nov 30 06:16 bigdata-project
+-rw-rw-r--  1 ubuntu ubuntu     47785 Dec  1 14:20 bigdata-project.zip
+ubuntu@ip-172-31-23-116:~$ cd bigdata-project/
+ubuntu@ip-172-31-23-116:~/bigdata-project$ ls -lrt
+total 12
+-rw-rw-r-- 1 ubuntu ubuntu 7921 Nov 30 06:16 README.md
+drwxrwxr-x 5 ubuntu ubuntu 4096 Dec  1 18:57 oozieflightproject
+ubuntu@ip-172-31-23-116:~/bigdata-project$ hadoop fs -put -f oozieflightproject hdfs://master:9000/user/ubuntu/
+ubuntu@ip-172-31-23-116:~/bigdata-project$ hadoop fs -ls hdfs://master:9000/user/ubuntu/
+Found 4 items
+drwxr-xr-x   - ubuntu supergroup          0 2023-11-25 01:17 hdfs://master:9000/user/ubuntu/examples
+drwxr-xr-x   - ubuntu supergroup          0 2023-11-28 01:09 hdfs://master:9000/user/ubuntu/oozie-ubun
+drwxr-xr-x   - ubuntu supergroup          0 2023-12-01 20:00 hdfs://master:9000/user/ubuntu/oozieflightproject
+drwxr-xr-x   - ubuntu supergroup          0 2023-11-22 05:37 hdfs://master:9000/user/ubuntu/share
+ubuntu@ip-172-31-23-116:~/bigdata-project$
+
+step 20: 
+Run the hadoop jar command to get the output Note: Need to provide local aws jar path and input file form hadoop
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop jar /home/ubuntu/bigdata-project/oozieflightproject/src/FlightTaxiTime.jar FlightTaxiTime /user/ubuntu/oozieflightproject/input-data/1987.csv /user/ubuntu/oozieflightproject/output
+23/12/01 20:19:35 INFO client.RMProxy: Connecting to ResourceManager at master/172.31.23.116:8032
+23/12/01 20:19:36 WARN mapreduce.JobResourceUploader: Hadoop command-line option parsing not performed. Implement the Tool interface and execute your application with ToolRunner to remedy this.
+23/12/01 20:19:36 INFO input.FileInputFormat: Total input paths to process : 1
+23/12/01 20:19:36 INFO mapreduce.JobSubmitter: number of splits:1
+23/12/01 20:19:36 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1701453296004_0002
+23/12/01 20:19:37 INFO impl.YarnClientImpl: Submitted application application_1701453296004_0002
+23/12/01 20:19:37 INFO mapreduce.Job: The url to track the job: http://master:8088/proxy/application_1701453296004_0002/
+23/12/01 20:19:37 INFO mapreduce.Job: Running job: job_1701453296004_0002
+23/12/01 20:19:47 INFO mapreduce.Job: Job job_1701453296004_0002 running in uber mode : false
+23/12/01 20:19:47 INFO mapreduce.Job:  map 0% reduce 0%
+23/12/01 20:19:59 INFO mapreduce.Job:  map 100% reduce 0%
+23/12/01 20:20:07 INFO mapreduce.Job:  map 100% reduce 100%
+23/12/01 20:20:08 INFO mapreduce.Job: Job job_1701453296004_0002 completed successfully
+23/12/01 20:20:08 INFO mapreduce.Job: Counters: 49
+        File System Counters
+                FILE: Number of bytes read=6
+                FILE: Number of bytes written=214985
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=127163076
+                HDFS: Number of bytes written=32
+                HDFS: Number of read operations=6
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=2
+        Job Counters
+                Launched map tasks=1
+                Launched reduce tasks=1
+                Data-local map tasks=1
+                Total time spent by all maps in occupied slots (ms)=9252
+                Total time spent by all reduces in occupied slots (ms)=6206
+                Total time spent by all map tasks (ms)=9252
+                Total time spent by all reduce tasks (ms)=6206
+                Total vcore-milliseconds taken by all map tasks=9252
+                Total vcore-milliseconds taken by all reduce tasks=6206
+                Total megabyte-milliseconds taken by all map tasks=9474048
+                Total megabyte-milliseconds taken by all reduce tasks=6354944
+        Map-Reduce Framework
+                Map input records=1311827
+                Map output records=0
+                Map output bytes=0
+                Map output materialized bytes=6
+                Input split bytes=134
+                Combine input records=0
+                Combine output records=0
+                Reduce input groups=0
+                Reduce shuffle bytes=6
+                Reduce input records=0
+                Reduce output records=1
+                Spilled Records=0
+                Shuffled Maps =1
+                Failed Shuffles=0
+                Merged Map outputs=1
+                GC time elapsed (ms)=488
+                CPU time spent (ms)=4220
+                Physical memory (bytes) snapshot=297746432
+                Virtual memory (bytes) snapshot=3671265280
+                Total committed heap usage (bytes)=137498624
+        Shuffle Errors
+                BAD_ID=0
+                CONNECTION=0
+                IO_ERROR=0
+                WRONG_LENGTH=0
+                WRONG_MAP=0
+                WRONG_REDUCE=0
+        File Input Format Counters
+                Bytes Read=127162942
+        File Output Format Counters
+                Bytes Written=32
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+Run the hadoop jar command to get the output Note: Need to provide local aws jar path and input file form hadoop
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop jar /home/ubuntu/bigdata-project/oozieflightproject/src/FlightCancellation.jar FlightCancellation /user/ubuntu/oozieflightproject/input-data/1987.csv /user/ubuntu/oozieflightproject/FlightCancellation/output
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop fs -ls /user/ubuntu/oozieflightproject/FlightCancellation/output/
+Found 2 items
+-rw-r--r--   3 ubuntu supergroup          0 2023-12-01 21:40 /user/ubuntu/oozieflightproject/FlightCancellation/output/_SUCCESS
+-rw-r--r--   3 ubuntu supergroup         33 2023-12-01 21:40 /user/ubuntu/oozieflightproject/FlightCancellation/output/part-r-00000
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop fs -cat /user/ubuntu/oozieflightproject/FlightCancellation/output/part-r-00000
+No cancellation data available  0
+
+
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop jar /home/ubuntu/bigdata-project/oozieflightproject/src/FlightDelay.jar FlightDelay /user/ubuntu/oozieflightproject/input-data/1987.csv /user/ubuntu/oozieflightproject/FlightDelay/output
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$ hadoop fs -cat /user/ubuntu/oozieflightproject/FlightDelay/output/part-r-00000
+Highest 3 Probability   0.0
+WN      0.7496883631119693
+AA      0.7390243237347295
+CO      0.7193055030965785
+Lowest 3 Probability    0.0
+DL      0.6338324221338635
+PS      0.6364432216108054
+AS      0.6542770487744491
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/src$
+
+
+Step 21:
+Run using oozie:
+
+You might notice that the preceding Oozie action definition does not have any reference to the main JAR (/user/ubuntu/myApp.jar) that you saw in the Hadoop command line. This is because of the way Oozie workflows are packaged and deployed. Oozie knows where to look for and find this JAR. The JAR has to be copied to the lib/ subdirectory under the workflow application root directory on HDFS.
+
+Need to change the staructrue as below.
+
+ubuntu@ip-172-31-23-116:~/bigdata-project$ ls -lrtR
+.:
+total 12
+-rw-rw-r-- 1 ubuntu ubuntu 7921 Nov 30 06:16 README.md
+drwxrwxr-x 5 ubuntu ubuntu 4096 Dec  2 05:11 oozieflightproject
+
+./oozieflightproject:
+total 56
+-rw-rw-r-- 1 ubuntu ubuntu  8541 Nov 30 06:16 output.txt
+-rw-rw-r-- 1 ubuntu ubuntu 22369 Nov 30 06:16 oozie_workflow.png
+-rw-rw-r-- 1 ubuntu ubuntu  1778 Nov 30 06:16 oozie_workflow.drawio
+-rw-rw-r-- 1 ubuntu ubuntu  1379 Nov 30 06:16 commands.txt
+drwxrwxr-x 5 ubuntu ubuntu  4096 Dec  1 18:54 src
+drwxrwxr-x 2 ubuntu ubuntu  4096 Dec  1 19:48 input-data
+drwxrwxr-x 3 ubuntu ubuntu  4096 Dec  2 06:08 apps
+
+./oozieflightproject/src:
+total 56
+-rw-rw-r-- 1 ubuntu ubuntu 4397 Nov 30 06:16 FlightTaxiTime.java
+-rw-rw-r-- 1 ubuntu ubuntu 3998 Nov 30 06:16 FlightDelay.java
+-rw-rw-r-- 1 ubuntu ubuntu 4120 Nov 30 06:16 FlightCancellation.java
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:12 FlightTaxiTime
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 18:27 FlightTaxiTime.jar
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:32 FlightDelay
+-rw-rw-r-- 1 ubuntu ubuntu 4748 Dec  1 18:35 FlightDelay.jar
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  1 18:52 FlightCancellation
+-rw-rw-r-- 1 ubuntu ubuntu 5099 Dec  1 18:54 FlightCancellation.jar
+
+./oozieflightproject/src/FlightTaxiTime:
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1917 Dec  1 18:12  FlightTaxiTimeMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu  552 Dec  1 18:12 'FlightTaxiTimeReducer$customTaxiTime.class'
+-rw-rw-r-- 1 ubuntu ubuntu 1116 Dec  1 18:12 'FlightTaxiTimeReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu 3203 Dec  1 18:12  FlightTaxiTimeReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1483 Dec  1 18:12  FlightTaxiTime.class
+
+./oozieflightproject/src/FlightDelay:
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1799 Dec  1 18:32  FlightDelayMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu  574 Dec  1 18:32 'FlightDelayReducer$customDelay.class'
+-rw-rw-r-- 1 ubuntu ubuntu 1069 Dec  1 18:32 'FlightDelayReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu 2999 Dec  1 18:32  FlightDelayReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1471 Dec  1 18:32  FlightDelay.class
+
+./oozieflightproject/src/FlightCancellation:
+total 20
+-rw-rw-r-- 1 ubuntu ubuntu 1791 Dec  1 18:52  FlightCancellationMapper.class
+-rw-rw-r-- 1 ubuntu ubuntu 1141 Dec  1 18:52 'FlightCancellationReducer$1.class'
+-rw-rw-r-- 1 ubuntu ubuntu  623 Dec  1 18:52 'FlightCancellationReducer$customCancel.class'
+-rw-rw-r-- 1 ubuntu ubuntu 3564 Dec  1 18:52  FlightCancellationReducer.class
+-rw-rw-r-- 1 ubuntu ubuntu 1496 Dec  1 18:52  FlightCancellation.class
+
+./oozieflightproject/input-data:
+total 124184
+-rw-rw-r-- 1 ubuntu ubuntu 127162942 Dec  1 19:49 1987.csv
+
+./oozieflightproject/apps:
+total 16
+drwxrwxr-x 2 ubuntu ubuntu 4096 Dec  2 05:15 lib
+-rw-rw-r-- 1 ubuntu ubuntu  336 Dec  2 05:31 job.properties
+-rw-rw-r-- 1 ubuntu ubuntu 6242 Dec  2 06:08 workflow.xml
+
+./oozieflightproject/apps/lib:
+total 24
+-rw-rw-r-- 1 ubuntu ubuntu 4748 Dec  1 22:41 FlightDelay.jar
+-rw-rw-r-- 1 ubuntu ubuntu 5099 Dec  1 22:41 FlightCancellation.jar
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 22:41 FlightTaxiTime.jar
+ubuntu@ip-172-31-23-116:~/bigdata-project$
+
+
+Step 22:
+Update the .bash_profile as below.
+ubuntu@ip-172-31-23-116:~$ cat .bash_profile
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export HADOOP_HOME=/home/ubuntu/hadoop-2.6.5
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export OOZIE_VERSION=4.1.0
+export OOZIE_HOME=/usr/local/oozie-4.1.0
+export PATH=$PATH:$OOZIE_HOME/bin
+
+Step 23:
+source .bash_profile
+
+step 24:
+Remove oozieflightproject folder from the hadoop and put again
+hadoop fs -rm -r -f -skipTrash oozieflightproject
+hadoop fs -put -f  oozieflightproject hdfs://master:9000/user/ubuntu/
+
+Step 25:
+Start the oozie
+ubuntu@ip-172-31-23-116:~$ oozied.sh start
+
+Step 26:
+Check the status
+oozie admin -oozie http://ec2-3-93-68-190.compute-1.amazonaws.com:11000/oozie -status
+System mode: NORMAL
+
+Step 27:
+Rub the oozie job:
+
+oozie job -oozie http://ec2-3-93-68-190.compute-1.amazonaws.com:11000/oozie -config bigdata-project/oozieflightproject/apps/job.properties -run
+
+oozie job -oozie http://ec2-3-93-68-190.compute-1.amazonaws.com:11000/oozie -info 0000000-231208034337288-oozie-ubun-W -verbose
+
+Oozie UI:
+http://ec2-107-22-33-108.compute-1.amazonaws.com:11000/oozie 
+
+RM
+
+http://ec2-3-93-68-190.compute-1.amazonaws.com:8088
+Hadoop:
+http://ec2-3-80-58-131.compute-1.amazonaws.com:50070
+
+
+
+-rw-rw-r-- 1 ubuntu ubuntu 4748 Dec  1 22:41 FlightDelay.jar
+-rw-rw-r-- 1 ubuntu ubuntu 5099 Dec  1 22:41 FlightCancellation.jar
+-rw-rw-r-- 1 ubuntu ubuntu 4941 Dec  1 22:41 FlightTaxiTime.jar
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/apps/lib$ pwd
+/home/ubuntu/bigdata-project/oozieflightproject/apps/lib
+ubuntu@ip-172-31-23-116:~/bigdata-project/oozieflightproject/apps/lib$
